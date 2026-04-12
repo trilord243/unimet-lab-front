@@ -120,3 +120,27 @@ export interface SafetyRule {
   order: number;
   iconName?: string;
 }
+
+export interface Purchase {
+  _id: string;
+  itemName: string;
+  description?: string;
+  estimatedQuantity?: number;
+  unit?: string;
+  estimatedCost?: number;
+  requestedBy: string;
+  justification?: string;
+  urgency: "low" | "normal" | "high" | "critical";
+  status: "pending" | "approved" | "purchased" | "rejected";
+}
+
+export interface ResearchProject {
+  _id: string;
+  title: string;
+  description?: string;
+  leadProfessor: string;
+  students: string[];
+  startDate?: string;
+  endDate?: string;
+  status: "active" | "completed" | "paused" | "cancelled";
+}
