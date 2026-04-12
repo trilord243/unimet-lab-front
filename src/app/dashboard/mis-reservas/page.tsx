@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ReagentRequest } from "@/types";
+import type {
+  ReagentRequest,
+  SpaceReservation,
+  EquipmentReservation,
+} from "@/types";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   pending: { label: "Pendiente", color: "bg-yellow-100 text-yellow-800" },
@@ -12,17 +16,32 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   completed: { label: "Completada", color: "bg-blue-100 text-blue-800" },
 };
 
+const TABS = [
+  { key: "spaces", label: "Espacios" },
+  { key: "equipments", label: "Equipos" },
+  { key: "reagents", label: "Reactivos" },
+] as const;
+
+type TabKey = (typeof TABS)[number]["key"];
+
 export default function MisReservasPage() {
+  const [tab, setTab] = useState<TabKey>("spaces");
+  const [spaces, setSpaces] = useState<SpaceReservation[]>([]);
+  const [equipments, setEquipments] = useState<EquipmentReservation[]>([]);
   const [reagents, setReagents] = useState<ReagentRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/reservations/reagents/mine")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setReagents(data);
-        setLoading(false);
-      });
+    Promise.all([
+      fetch("/api/reservations/spaces/mine").then((r) => r.json()),
+      fetch("/api/reservations/equipments/mine").then((r) => r.json()),
+      fetch("/api/reservations/reagents/mine").then((r) => r.json()),
+    ]).then(([s, e, r]) => {
+      if (Array.isArray(s)) setSpaces(s);
+      if (Array.isArray(e)) setEquipments(e);
+      if (Array.isArray(r)) setReagents(r);
+      setLoading(false);
+    });
   }, []);
 
   return (
@@ -32,58 +51,122 @@ export default function MisReservasPage() {
         Estado de todas tus solicitudes.
       </p>
 
-      <h2 className="mt-8 mb-3 text-lg font-bold text-[var(--brand-secondary)]">
-        Solicitudes de reactivos
-      </h2>
-      <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-[var(--brand-gray)]">
-            <tr>
-              <th className="px-4 py-3">Reactivo</th>
-              <th className="px-4 py-3">Cantidad</th>
-              <th className="px-4 py-3">Justificación</th>
-              <th className="px-4 py-3">Estado</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {loading ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-12 text-center text-[var(--brand-gray)]">
-                  Cargando...
-                </td>
-              </tr>
-            ) : reagents.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-12 text-center text-[var(--brand-gray)]">
-                  No tienes solicitudes aún
-                </td>
-              </tr>
-            ) : (
-              reagents.map((r) => {
-                const status = STATUS_LABELS[r.status] || STATUS_LABELS.pending!;
-                return (
-                  <tr key={r._id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-mono text-xs">{r.reagentId}</td>
-                    <td className="px-4 py-3">
-                      {r.quantity} {r.unit}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--brand-gray)]">
-                      {r.justification || "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-bold ${status.color}`}
-                      >
-                        {status.label}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6 flex gap-2 border-b border-border">
+        {TABS.map((t) => {
+          const count =
+            t.key === "spaces"
+              ? spaces.length
+              : t.key === "equipments"
+                ? equipments.length
+                : reagents.length;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+                tab === t.key
+                  ? "border-[var(--brand-primary)] text-[var(--brand-primary)]"
+                  : "border-transparent text-[var(--brand-gray)] hover:text-[var(--brand-secondary)]"
+              }`}
+            >
+              {t.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-6 overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+        {loading ? (
+          <div className="p-12 text-center text-[var(--brand-gray)]">
+            Cargando...
+          </div>
+        ) : tab === "spaces" ? (
+          <SimpleTable
+            headers={["Espacio", "Fecha", "Bloques", "Notas", "Estado"]}
+            rows={spaces.map((s) => [
+              <span key="id" className="font-mono text-xs">{s.spaceId}</span>,
+              new Date(s.date).toLocaleDateString("es-VE"),
+              s.timeBlocks.join(", "),
+              s.notes || "—",
+              <StatusBadge key="st" status={s.status} />,
+            ])}
+          />
+        ) : tab === "equipments" ? (
+          <SimpleTable
+            headers={["Equipo", "Fecha", "Bloques", "Notas", "Estado"]}
+            rows={equipments.map((e) => [
+              <span key="id" className="font-mono text-xs">{e.equipmentId}</span>,
+              new Date(e.date).toLocaleDateString("es-VE"),
+              e.timeBlocks.join(", "),
+              e.notes || "—",
+              <StatusBadge key="st" status={e.status} />,
+            ])}
+          />
+        ) : (
+          <SimpleTable
+            headers={["Reactivo", "Cantidad", "Justificación", "Estado"]}
+            rows={reagents.map((r) => [
+              <span key="id" className="font-mono text-xs">{r.reagentId}</span>,
+              `${r.quantity} ${r.unit}`,
+              r.justification || "—",
+              <StatusBadge key="st" status={r.status} />,
+            ])}
+          />
+        )}
       </div>
     </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const s = STATUS_LABELS[status] || STATUS_LABELS.pending!;
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${s.color}`}>
+      {s.label}
+    </span>
+  );
+}
+
+function SimpleTable({
+  headers,
+  rows,
+}: {
+  headers: string[];
+  rows: React.ReactNode[][];
+}) {
+  return (
+    <table className="w-full text-sm">
+      <thead className="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-[var(--brand-gray)]">
+        <tr>
+          {headers.map((h) => (
+            <th key={h} className="px-4 py-3">
+              {h}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-border">
+        {rows.length === 0 ? (
+          <tr>
+            <td
+              colSpan={headers.length}
+              className="px-4 py-12 text-center text-[var(--brand-gray)]"
+            >
+              No tienes solicitudes en esta categoría
+            </td>
+          </tr>
+        ) : (
+          rows.map((row, i) => (
+            <tr key={i} className="hover:bg-gray-50">
+              {row.map((cell, j) => (
+                <td key={j} className="px-4 py-3">
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
   );
 }
