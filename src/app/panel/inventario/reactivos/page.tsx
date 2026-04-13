@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Reagent } from "@/types";
 import { ReagentFormDialog } from "@/components/inventory/reagent-form-dialog";
+import { HistoryModal } from "@/components/inventory/history-modal";
+import { QRModal } from "@/components/inventory/qr-modal";
 
 export default function InventarioReactivosPage() {
   const [items, setItems] = useState<Reagent[]>([]);
@@ -10,6 +12,8 @@ export default function InventarioReactivosPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Reagent | null>(null);
+  const [historyItem, setHistoryItem] = useState<Reagent | null>(null);
+  const [qrItem, setQrItem] = useState<Reagent | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -63,7 +67,7 @@ export default function InventarioReactivosPage() {
       <div className="mt-6">
         <input
           type="search"
-          placeholder="Buscar por nombre, fórmula o CAS..."
+          placeholder="Buscar por código, nombre, fórmula o CAS..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-md rounded-md border border-border px-3 py-2 focus:border-[var(--brand-primary)] focus:outline-none"
@@ -74,9 +78,9 @@ export default function InventarioReactivosPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-[var(--brand-gray)]">
             <tr>
+              <th className="px-4 py-3">Código</th>
               <th className="px-4 py-3">Nombre</th>
               <th className="px-4 py-3">Fórmula</th>
-              <th className="px-4 py-3">CAS</th>
               <th className="px-4 py-3">Cantidad</th>
               <th className="px-4 py-3">Ubicación</th>
               <th className="px-4 py-3">Peligro</th>
@@ -102,14 +106,20 @@ export default function InventarioReactivosPage() {
                   r.lowStockThreshold > 0 && r.quantity < r.lowStockThreshold;
                 return (
                   <tr key={r._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      {r.assetCode ? (
+                        <span className="rounded-full bg-[var(--brand-primary)] px-2 py-0.5 font-mono text-xs font-bold text-white">
+                          {r.assetCode}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[var(--brand-gray)]">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 font-medium text-[var(--brand-secondary)]">
                       {r.name}
                     </td>
                     <td className="px-4 py-3 text-[var(--brand-gray)]">
                       {r.formula || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--brand-gray)]">
-                      {r.casNumber || "—"}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -140,6 +150,24 @@ export default function InventarioReactivosPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
+                      {r.assetCode && (
+                        <>
+                          <button
+                            onClick={() => setQrItem(r)}
+                            className="mr-2 text-sm font-medium text-[var(--brand-orange)] hover:underline"
+                            title="Ver QR imprimible"
+                          >
+                            QR
+                          </button>
+                          <button
+                            onClick={() => setHistoryItem(r)}
+                            className="mr-2 text-sm font-medium text-purple-600 hover:underline"
+                            title="Ver historial"
+                          >
+                            Historial
+                          </button>
+                        </>
+                      )}
                       <button
                         onClick={() => {
                           setEditing(r);
@@ -170,6 +198,26 @@ export default function InventarioReactivosPage() {
         onClose={() => setDialogOpen(false)}
         onSaved={load}
       />
+
+      {historyItem && (
+        <HistoryModal
+          open={!!historyItem}
+          itemType="reagent"
+          itemId={historyItem._id}
+          itemName={historyItem.name}
+          assetCode={historyItem.assetCode}
+          onClose={() => setHistoryItem(null)}
+        />
+      )}
+
+      {qrItem && qrItem.assetCode && (
+        <QRModal
+          open={!!qrItem}
+          assetCode={qrItem.assetCode}
+          itemName={qrItem.name}
+          onClose={() => setQrItem(null)}
+        />
+      )}
     </div>
   );
 }

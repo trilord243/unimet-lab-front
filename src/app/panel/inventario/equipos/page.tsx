@@ -6,6 +6,8 @@ import {
   GenericFormDialog,
   type Field,
 } from "@/components/inventory/generic-form-dialog";
+import { HistoryModal } from "@/components/inventory/history-modal";
+import { QRModal } from "@/components/inventory/qr-modal";
 
 const FIELDS: Field[] = [
   { key: "name", label: "Nombre", required: true },
@@ -43,6 +45,8 @@ export default function InventarioEquiposPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Equipment | null>(null);
+  const [historyItem, setHistoryItem] = useState<Equipment | null>(null);
+  const [qrItem, setQrItem] = useState<Equipment | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -96,7 +100,7 @@ export default function InventarioEquiposPage() {
       <div className="mt-6">
         <input
           type="search"
-          placeholder="Buscar equipo..."
+          placeholder="Buscar por código, nombre, marca o modelo..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-md rounded-md border border-border px-3 py-2 focus:border-[var(--brand-primary)] focus:outline-none"
@@ -107,9 +111,9 @@ export default function InventarioEquiposPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-[var(--brand-gray)]">
             <tr>
+              <th className="px-4 py-3">Código</th>
               <th className="px-4 py-3">Nombre</th>
               <th className="px-4 py-3">Marca / Modelo</th>
-              <th className="px-4 py-3">N° Serie</th>
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3">Ubicación</th>
               <th className="px-4 py-3 text-right">Acciones</th>
@@ -133,14 +137,20 @@ export default function InventarioEquiposPage() {
                 const st = STATUS_LABEL[e.status] || STATUS_LABEL.available!;
                 return (
                   <tr key={e._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      {e.assetCode ? (
+                        <span className="rounded-full bg-[var(--brand-primary)] px-2 py-0.5 font-mono text-xs font-bold text-white">
+                          {e.assetCode}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[var(--brand-gray)]">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 font-medium text-[var(--brand-secondary)]">
                       {e.name}
                     </td>
                     <td className="px-4 py-3 text-[var(--brand-gray)]">
                       {[e.brand, e.model].filter(Boolean).join(" / ") || "—"}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-[var(--brand-gray)]">
-                      {e.serialNumber || "—"}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -153,6 +163,22 @@ export default function InventarioEquiposPage() {
                       {e.location || "—"}
                     </td>
                     <td className="px-4 py-3 text-right">
+                      {e.assetCode && (
+                        <>
+                          <button
+                            onClick={() => setQrItem(e)}
+                            className="mr-2 text-sm font-medium text-[var(--brand-orange)] hover:underline"
+                          >
+                            QR
+                          </button>
+                          <button
+                            onClick={() => setHistoryItem(e)}
+                            className="mr-2 text-sm font-medium text-purple-600 hover:underline"
+                          >
+                            Historial
+                          </button>
+                        </>
+                      )}
                       <button
                         onClick={() => {
                           setEditing(e);
@@ -186,6 +212,25 @@ export default function InventarioEquiposPage() {
         onClose={() => setDialogOpen(false)}
         onSaved={load}
       />
+
+      {historyItem && (
+        <HistoryModal
+          open={!!historyItem}
+          itemType="equipment"
+          itemId={historyItem._id}
+          itemName={historyItem.name}
+          assetCode={historyItem.assetCode}
+          onClose={() => setHistoryItem(null)}
+        />
+      )}
+      {qrItem && qrItem.assetCode && (
+        <QRModal
+          open={!!qrItem}
+          assetCode={qrItem.assetCode}
+          itemName={qrItem.name}
+          onClose={() => setQrItem(null)}
+        />
+      )}
     </div>
   );
 }

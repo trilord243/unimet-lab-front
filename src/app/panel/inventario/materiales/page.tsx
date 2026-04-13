@@ -6,6 +6,8 @@ import {
   GenericFormDialog,
   type Field,
 } from "@/components/inventory/generic-form-dialog";
+import { HistoryModal } from "@/components/inventory/history-modal";
+import { QRModal } from "@/components/inventory/qr-modal";
 
 const FIELDS: Field[] = [
   { key: "name", label: "Nombre", required: true },
@@ -26,6 +28,8 @@ export default function InventarioMaterialesPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Material | null>(null);
+  const [historyItem, setHistoryItem] = useState<Material | null>(null);
+  const [qrItem, setQrItem] = useState<Material | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -79,7 +83,7 @@ export default function InventarioMaterialesPage() {
       <div className="mt-6">
         <input
           type="search"
-          placeholder="Buscar..."
+          placeholder="Buscar por código, nombre o categoría..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-md rounded-md border border-border px-3 py-2 focus:border-[var(--brand-primary)] focus:outline-none"
@@ -90,6 +94,7 @@ export default function InventarioMaterialesPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-[var(--brand-gray)]">
             <tr>
+              <th className="px-4 py-3">Código</th>
               <th className="px-4 py-3">Nombre</th>
               <th className="px-4 py-3">Categoría</th>
               <th className="px-4 py-3">Cantidad</th>
@@ -100,19 +105,28 @@ export default function InventarioMaterialesPage() {
           <tbody className="divide-y divide-border">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-[var(--brand-gray)]">
+                <td colSpan={6} className="px-4 py-12 text-center text-[var(--brand-gray)]">
                   Cargando...
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-[var(--brand-gray)]">
+                <td colSpan={6} className="px-4 py-12 text-center text-[var(--brand-gray)]">
                   Sin materiales registrados
                 </td>
               </tr>
             ) : (
               items.map((m) => (
                 <tr key={m._id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    {m.assetCode ? (
+                      <span className="rounded-full bg-[var(--brand-primary)] px-2 py-0.5 font-mono text-xs font-bold text-white">
+                        {m.assetCode}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-[var(--brand-gray)]">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-medium text-[var(--brand-secondary)]">
                     {m.name}
                   </td>
@@ -126,6 +140,22 @@ export default function InventarioMaterialesPage() {
                     {m.location || "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
+                    {m.assetCode && (
+                      <>
+                        <button
+                          onClick={() => setQrItem(m)}
+                          className="mr-2 text-sm font-medium text-[var(--brand-orange)] hover:underline"
+                        >
+                          QR
+                        </button>
+                        <button
+                          onClick={() => setHistoryItem(m)}
+                          className="mr-2 text-sm font-medium text-purple-600 hover:underline"
+                        >
+                          Historial
+                        </button>
+                      </>
+                    )}
                     <button
                       onClick={() => {
                         setEditing(m);
@@ -158,6 +188,25 @@ export default function InventarioMaterialesPage() {
         onClose={() => setDialogOpen(false)}
         onSaved={load}
       />
+
+      {historyItem && (
+        <HistoryModal
+          open={!!historyItem}
+          itemType="material"
+          itemId={historyItem._id}
+          itemName={historyItem.name}
+          assetCode={historyItem.assetCode}
+          onClose={() => setHistoryItem(null)}
+        />
+      )}
+      {qrItem && qrItem.assetCode && (
+        <QRModal
+          open={!!qrItem}
+          assetCode={qrItem.assetCode}
+          itemName={qrItem.name}
+          onClose={() => setQrItem(null)}
+        />
+      )}
     </div>
   );
 }

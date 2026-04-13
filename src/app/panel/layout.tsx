@@ -9,6 +9,7 @@ const items = [
   { href: "/panel/inventario/equipos", label: "Equipos" },
   { href: "/panel/inventario/compras", label: "Compras Requeridas" },
   { href: "/panel/inventario/investigacion", label: "Investigación" },
+  { href: "/panel/historial", label: "Historial" },
   { href: "/panel/manuales", label: "Manuales" },
 ];
 

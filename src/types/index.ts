@@ -9,6 +9,7 @@ export interface User {
 
 export interface Reagent {
   _id: string;
+  assetCode?: string;
   name: string;
   formula?: string;
   casNumber?: string;
@@ -23,6 +24,7 @@ export interface Reagent {
 
 export interface Material {
   _id: string;
+  assetCode?: string;
   name: string;
   category?: string;
   quantity: number;
@@ -33,6 +35,7 @@ export interface Material {
 
 export interface Equipment {
   _id: string;
+  assetCode?: string;
   name: string;
   brand?: string;
   model?: string;
@@ -132,6 +135,31 @@ export interface Purchase {
   justification?: string;
   urgency: "low" | "normal" | "high" | "critical";
   status: "pending" | "approved" | "purchased" | "rejected";
+}
+
+export type InventoryItemType = "reagent" | "material" | "equipment";
+export type InventoryAction =
+  | "created"
+  | "updated"
+  | "deleted"
+  | "quantity_in"
+  | "quantity_out"
+  | "status_change";
+
+export interface InventoryHistoryEntry {
+  _id: string;
+  itemType: InventoryItemType;
+  itemId: string;
+  assetCode?: string;
+  itemName?: string;
+  action: InventoryAction;
+  performedBy?: string;
+  performedByName?: string;
+  changes?: Record<string, { from: any; to: any }>;
+  delta?: number;
+  unit?: string;
+  reason?: string;
+  createdAt: string;
 }
 
 export interface ResearchProject {
