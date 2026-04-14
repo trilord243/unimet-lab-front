@@ -47,13 +47,11 @@ function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center">
-              <div className="w-5 h-5 bg-brand-orange rounded-md" />
-            </div>
-            <span className="font-roboto-condensed font-black text-xl text-brand-secondary uppercase tracking-tight leading-none">
-              Lab<span className="text-brand-orange">UNIMET</span>
-            </span>
+          <Link
+            href="/"
+            className="font-roboto-condensed font-black text-2xl text-brand-secondary uppercase tracking-tight leading-none"
+          >
+            Lab<span className="text-brand-orange">UNIMET</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 font-roboto font-medium text-sm">
@@ -490,17 +488,12 @@ function About() {
                 diseño y operación es esencial para cualquier ingeniero
                 químico.
               </p>
-              <div className="flex items-center gap-3 pt-6 border-t border-white/20">
-                <div className="w-10 h-10 rounded-full bg-brand-orange flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded-full" />
+              <div className="pt-6 border-t border-white/20">
+                <div className="font-roboto font-bold text-sm">
+                  Dept. Ingeniería Química
                 </div>
-                <div>
-                  <div className="font-roboto font-bold text-sm">
-                    Dept. Ingeniería Química
-                  </div>
-                  <div className="font-roboto text-xs text-white/70">
-                    Universidad Metropolitana
-                  </div>
+                <div className="font-roboto text-xs text-white/70 mt-0.5">
+                  Universidad Metropolitana
                 </div>
               </div>
             </div>
@@ -1003,13 +996,8 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid md:grid-cols-4 gap-10 mb-12">
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                <div className="w-5 h-5 bg-brand-orange rounded-md" />
-              </div>
-              <span className="font-roboto-condensed font-black text-xl uppercase tracking-tight leading-none">
-                Lab<span className="text-brand-orange">UNIMET</span>
-              </span>
+            <div className="font-roboto-condensed font-black text-2xl uppercase tracking-tight leading-none mb-4">
+              Lab<span className="text-brand-orange">UNIMET</span>
             </div>
             <p className="font-roboto text-sm text-white/70 leading-relaxed">
               Laboratorio de Procesos de Separación de la Universidad
