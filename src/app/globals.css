@@ -63,6 +63,9 @@
 
   --font-roboto: "Roboto", system-ui, -apple-system, sans-serif;
   --font-roboto-condensed: "Roboto Condensed", system-ui, -apple-system, sans-serif;
+  --font-display-serif: "Fraunces", "Times New Roman", serif;
+  --font-body-sans: "Instrument Sans", system-ui, sans-serif;
+  --font-mono-ed: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -85,6 +88,36 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Editorial landing — staggered entrance */
+@keyframes editorialRise {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ed-rise {
+  animation: editorialRise 0.9s cubic-bezier(0.16, 0.84, 0.22, 1) both;
+}
+.ed-delay-1 { animation-delay: 0.08s; }
+.ed-delay-2 { animation-delay: 0.22s; }
+.ed-delay-3 { animation-delay: 0.36s; }
+.ed-delay-4 { animation-delay: 0.5s; }
+.ed-delay-5 { animation-delay: 0.64s; }
+
+/* Editorial display utilities */
+.ed-display { font-family: var(--font-display-serif); font-feature-settings: "ss01","ss02"; }
+.ed-body { font-family: var(--font-body-sans); }
+.ed-mono { font-family: var(--font-mono-ed); font-feature-settings: "tnum"; }
+
+/* Paper grain — subtle noise texture over cream backgrounds */
+.ed-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
 }
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }
